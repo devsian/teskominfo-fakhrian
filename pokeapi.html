@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokemon</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        li {
+            cursor: pointer;
+            margin-bottom: 2px;
+            padding: 8px 2px;
+            list-style-type: none;
+            background-color: lightgreen;
+            border-radius: 4px;
+            color: #404040;
+            text-align: center;
+        }
+
+        li:hover {
+            background-color: green;
+            color: white;
+        }
+
+        .container {
+            margin: 20px;
+            width: 400px;
+            background-color: antiquewhite;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        #detail {
+            background-color: azure;
+            border-radius: 2px;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        img {
+            width: 80%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="detail">
+            <h2>Detail</h2>
+            <br>
+            <h4>Nama Pokemon</h4>
+            <img src="" alt="">
+            <p>Base Experience : </p>
+            <p>Height : </p>
+            <p>Weight : </p>
+            <p>Stat: </p>
+            <p>Abilities :</p>
+            <p>Weight Category: </p>
+        </div>
+
+        <ul id="pokemonList">
+            <h2>Pokemon</h2>
+            <br>
+            <input type="text" id="searchInput" placeholder="Cari Pokemon" />
+            <br>
+            <br />
+            <p>Pilih Pokemon :</p>
+            <br />
+        </ul>
+    </div>
+
+    <script>
+        fetch("https://pokeapi.co/api/v2/pokemon/?offset=1&limit=200")
+            .then(function (response) {
+                if (response.status != 200) {
+                    console.log("Oops " + response.status);
+                    return;
+                }
+
+                response.json().then(function (data) {
+                    const pokemons = data.results; // Mengubah "data.result" menjadi "data.results"
+
+                    pokemons.forEach((pokemon) => {
+                        document
+                            .getElementById("pokemonList")
+                            .insertAdjacentHTML(
+                                "beforeend",
+                                `<li onclick='detail("${pokemon.url}")'>${pokemon.name}</li>`
+                            );
+                    });
+                });
+            })
+            .catch(function (err) {
+                console.log(err);
+            });
+
+        function detail(url) {
+            // Menambahkan fungsi detail untuk menangani klik pada elemen list
+            fetch(url)
+                .then(function (response) {
+                    if (response.status != 200) {
+                        console.log("Oops " + response.status);
+                        return;
+                    }
+
+                    response.json().then(function (data) {
+                        const detailElement = document.getElementById("detail");
+                        detailElement.innerHTML = "";
+
+                        const nameElement = document.createElement("h3");
+                        nameElement.textContent = data.name;
+                        detailElement.appendChild(nameElement);
+
+                        const spriteElement = document.createElement("img");
+                        spriteElement.src = data.sprites.front_default;
+                        detailElement.appendChild(spriteElement);
+
+                        const base_exp = data.base_experience;
+                        let baseExperience;
+
+                        if(base_exp <= 200){
+                            baseExperience = " (junior)"
+                        } else {
+                            baseExperience = " (proffesional)"
+                        }
+
+                        const baseExpElement = document.createElement("p");
+                        baseExpElement.textContent =
+                            "Base Experience: " + data.base_experience + baseExperience;
+                        detailElement.appendChild(baseExpElement);
+
+                        const heightElement = document.createElement("p");
+                        heightElement.textContent = "Height: " + data.height;
+                        detailElement.appendChild(heightElement);
+
+
+                        
+                        const weight = data.weight;
+                        let weightCategory;
+
+                        if (weight <= 200) {
+                            weightCategory = " (Light)";
+                        } else if (weight <= 300) {
+                            weightCategory = " (Medium)";
+                        } else {
+                            weightCategory = " (Heavy)";
+                        }
+
+                        const weightElement = document.createElement("p");
+                        weightElement.textContent = "Weight: " + data.weight + weightCategory;
+                        detailElement.appendChild(weightElement);
+
+                        const statCountElement = document.createElement("p");
+                        statCountElement.textContent = "Stat Count: " + data.stats.length;
+                        detailElement.appendChild(statCountElement);
+
+                        const abilitiesElement = document.createElement("p");
+                        const abilities = data.abilities
+                            .map((ability) => ability.ability.name)
+                            .join(", ");
+                        abilitiesElement.textContent = "Abilities: " + abilities;
+                        detailElement.appendChild(abilitiesElement);
+                    });
+                })
+
+                .catch(function (err) {
+                    console.log(err);
+                });
+        }
+    </script>
+</body>
+
+</html>
